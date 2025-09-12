@@ -1,11 +1,43 @@
 .masonry-grid {
+  --__masonry-grid-gutter: var(--masonry-grid-gutter, 1rem);
+  --__masonry-grid-col-gap: var(
+    --masonry-grid-col-gap,
+    var(--__masonry-grid-gutter)
+  );
+  --__masonry-grid-row-gap: var(
+    --masonry-grid-row-gap,
+    var(--__masonry-grid-gutter)
+  );
+  --masonry-cols: 2;
+
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  column-gap: 1.5rem;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(
+      calc(100% / var(--masonry-cols) - var(--__masonry-grid-col-gap)),
+      1fr
+    )
+  );
+  column-gap: var(--__masonry-grid-col-gap);
 
   :is(*, *::before, *::after) {
     box-sizing: border-box;
+  }
+
+  @media (min-width: 768px) {
+    --masonry-cols: 3;
+    --__masonry-grid-gutter: var(--masonry-grid-gutter, 1.5rem);
+    --masonry-outside-gutter: var(--spacing-400);
+    --masonry-item-border-radius: var(--border-radius-100);
+  }
+
+  @media (min-width: 1024px) {
+    --masonry-cols: 4;
+  }
+
+  @media (min-width: 1440px) {
+    --masonry-cols: 5;
   }
 }
 
@@ -17,10 +49,10 @@
   height: max-content;
 
   & > div {
-    padding-block-end: 1.5rem;
+    padding-block-end: var(--__masonry-grid-row-gap);
   }
 
-  .masonry-grid[data-animate-first-group="false"] & {
+  .masonry-grid[data-animate-first-group="false"] &[data-group-index="0"] {
     animation: none;
     opacity: 1;
     translate: 0;

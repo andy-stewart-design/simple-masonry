@@ -31,15 +31,21 @@ function MasonryGrid({ children, animateFirstGroup }: MasonryGridProps) {
       data-animate-first-group={animateFirstGroup}
     >
       {gridItems.map((items, i) => (
-        <MasonryGridGroup key={i} group={items} />
+        <MasonryGridGroup key={i} group={items} groupIndex={i} />
       ))}
     </div>
   );
 }
 
-function MasonryGridGroup({ group }: { group: [string, React.ReactNode][] }) {
+function MasonryGridGroup({
+  group,
+  groupIndex,
+}: {
+  group: [string, React.ReactNode][];
+  groupIndex: number;
+}) {
   return group.map(([id, node], i) => (
-    <MasonryGridItem key={id} groupIndex={i} groupItemIndex={i}>
+    <MasonryGridItem key={id} groupIndex={groupIndex} groupItemIndex={i}>
       {node}
     </MasonryGridItem>
   ));

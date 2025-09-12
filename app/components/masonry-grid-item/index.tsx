@@ -45,7 +45,7 @@ function MasonryGridItem({
       observer.disconnect();
       image.removeEventListener("load", onLoad);
     };
-  }, [resizeGridItem]);
+  }, []);
 
   return (
     <div

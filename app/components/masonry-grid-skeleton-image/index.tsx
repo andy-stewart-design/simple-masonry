@@ -9,6 +9,7 @@ function MasonryGridSkeletonImage() {
       <img
         width={aspect.width}
         height={aspect.height}
+        alt=""
         className="mg-image"
         aria-hidden
       />

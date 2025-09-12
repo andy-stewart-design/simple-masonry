@@ -47,7 +47,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
   const [term, setTerm] = useState(actionData?.term ?? loaderData.term);
   const [page, setPage] = useState(0);
   const [gridItems, setGridItems] = useState<GridItems>(loaderData.data);
-  // const [animateFirstLoad, setAnimateFirstLoad] = useState(false);
+  const [animateFirstLoad, setAnimateFirstLoad] = useState(false);
 
   async function loadMore() {
     const res = await fetch(`/api/search/${term}?page=${page + 1}`);
@@ -66,7 +66,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
     if (term === actionData?.term) return;
 
     if (actionData?.data) {
-      // setAnimateFirstLoad(true);
+      setAnimateFirstLoad(true);
       setGridItems(actionData.data);
       setTerm(actionData.term);
     }
@@ -102,7 +102,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         </Form>
       </div>
       {gridItems && (
-        <MasonryGrid key={term} animateFirstGroup={false}>
+        <MasonryGrid key={term} animateFirstGroup={animateFirstLoad}>
           {gridItems.map((item) => (
             <div key={item.itemId} className="mg-card">
               <MasonryGridImage src={item.image?.imageUrl} />
