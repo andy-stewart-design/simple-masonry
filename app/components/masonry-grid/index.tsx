@@ -1,17 +1,16 @@
-import {
-  useRef,
-  useLayoutEffect,
-  useState,
-  type ComponentProps,
-  type CSSProperties,
-} from "react";
+import { useRef, useState, type ComponentProps } from "react";
+import MasonryGridItem from "../masonry-grid-item";
 import { getSrcFromNodes, groupItems } from "../utils/get-src-from-node";
-import { resizeGridItem } from "../utils/resize-grid-item";
 import "./style.css";
 
 const gridAutoRows = 2;
 
-function MasonryGrid({ children }: ComponentProps<"div">) {
+interface MasonryGridProps extends ComponentProps<"div"> {
+  animateFirstGroup?: boolean;
+  // reduceMotion?: boolean;
+}
+
+function MasonryGrid({ children, animateFirstGroup }: MasonryGridProps) {
   const prevItemCount = useRef(0);
   const groupSizes = useRef<number[]>([]);
   const [gridItems, setGridItems] = useState<[string, React.ReactNode][][]>([]);
@@ -26,7 +25,11 @@ function MasonryGrid({ children }: ComponentProps<"div">) {
   }
 
   return (
-    <div className="masonry-grid" style={{ gridAutoRows }}>
+    <div
+      className="masonry-grid"
+      style={{ gridAutoRows }}
+      data-animate-first-group={animateFirstGroup}
+    >
       {gridItems.map((items, i) => (
         <MasonryGridGroup key={i} group={items} />
       ))}
@@ -36,58 +39,10 @@ function MasonryGrid({ children }: ComponentProps<"div">) {
 
 function MasonryGridGroup({ group }: { group: [string, React.ReactNode][] }) {
   return group.map(([id, node], i) => (
-    <MasonryGridItem key={id} groupIndex={i}>
+    <MasonryGridItem key={id} groupIndex={i} groupItemIndex={i}>
       {node}
     </MasonryGridItem>
   ));
-}
-
-function MasonryGridItem({
-  children,
-  groupIndex,
-}: ComponentProps<"div"> & {
-  groupIndex: number;
-}) {
-  const itemRef = useRef<HTMLDivElement | null>(null);
-
-  useLayoutEffect(() => {
-    const item = itemRef.current;
-    const image = item?.querySelector("img");
-    const target = item?.firstElementChild;
-    if (!item || !image || !target) return;
-
-    const observer = new ResizeObserver(() => resizeGridItem(item));
-    observer.observe(target);
-    resizeGridItem(item);
-
-    const onLoad = () => resizeGridItem(item);
-
-    if (image.complete) {
-      image
-        .decode?.()
-        .catch(() => {})
-        .finally(() => resizeGridItem(item));
-    } else {
-      const onLoad = () => resizeGridItem(item);
-      image.addEventListener("load", onLoad);
-    }
-
-    return () => {
-      observer.unobserve(target);
-      observer.disconnect();
-      image.removeEventListener("load", onLoad);
-    };
-  }, [resizeGridItem]);
-
-  return (
-    <div
-      ref={itemRef}
-      className="grid-item"
-      style={{ "--group-index": groupIndex } as CSSProperties}
-    >
-      <div>{children}</div>
-    </div>
-  );
 }
 
 export default MasonryGrid;

@@ -102,7 +102,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         </Form>
       </div>
       {gridItems && (
-        <MasonryGrid key={term}>
+        <MasonryGrid key={term} animateFirstGroup={false}>
           {gridItems.map((item) => (
             <div key={item.itemId} className="mg-card">
               <MasonryGridImage src={item.image?.imageUrl} />

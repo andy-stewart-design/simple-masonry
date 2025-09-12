@@ -11,13 +11,19 @@
 
 .grid-item {
   animation: grid-item-in 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards
-    calc(50ms * var(--group-index, 0));
+    calc(50ms * var(--group-item-index, 0));
   opacity: 0;
   translate: 0 2rem;
   height: max-content;
 
   & > div {
     padding-block-end: 1.5rem;
+  }
+
+  .masonry-grid[data-animate-first-group="false"] & {
+    animation: none;
+    opacity: 1;
+    translate: 0;
   }
 }
 
@@ -31,6 +37,13 @@
     width: 100%;
     height: auto;
     vertical-align: bottom;
+  }
+}
+
+.mg-skeleton-image-wrapper {
+  img {
+    opacity: 0;
+    visibility: hidden;
   }
 }
 
