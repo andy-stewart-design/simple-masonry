@@ -1,52 +1,59 @@
 import {
+  useCallback,
   useRef,
+  Children,
   useLayoutEffect,
-  useState,
   type ComponentProps,
   type CSSProperties,
 } from "react";
-import { getSrcFromNodes, groupItems } from "../utils/get-src-from-node";
-import { resizeGridItem } from "../utils/resize-grid-item";
+import { getSrcFromNodes } from "~/utils/get-src-from-node";
 import "./style.css";
 
-const gridAutoRows = 2;
-
 function MasonryGrid({ children }: ComponentProps<"div">) {
-  const prevItemCount = useRef(0);
-  const groupSizes = useRef<number[]>([]);
-  const [gridItems, setGridItems] = useState<[string, React.ReactNode][][]>([]);
+  const items = new Map(getSrcFromNodes(children));
+  const gridRef = useRef<HTMLDivElement>(null);
+  const groupSize = useRef(items.size);
 
-  const items = Array.from(new Map(getSrcFromNodes(children)));
+  const resizeGridItem = useCallback((item: HTMLElement) => {
+    const grid = gridRef.current;
+    if (!grid) return;
 
-  if (items.length > prevItemCount.current) {
-    const test = groupItems(items, groupSizes.current);
-    setGridItems(test.result);
-    groupSizes.current = test.groupSizes;
-    prevItemCount.current = items.length;
-  }
+    const rowHeight = parseInt(
+      window.getComputedStyle(grid).getPropertyValue("grid-auto-rows")
+    );
+    const rowSpan = Math.ceil(
+      item.firstElementChild!.getBoundingClientRect().height / rowHeight
+    );
+    item.style.gridRowEnd = "span " + rowSpan;
+  }, []);
+
+  if (!Array.isArray(children)) return null;
 
   return (
-    <div className="masonry-grid" style={{ gridAutoRows }}>
-      {gridItems.map((items, i) => (
-        <MasonryGridGroup key={i} group={items} />
+    <div ref={gridRef} className="masonry-grid">
+      {Array.from(items).map(([id, node], i) => (
+        <MasonryGridItem
+          key={id}
+          gridIndex={i}
+          groupIndex={i % groupSize.current}
+          resizeGridItem={resizeGridItem}
+        >
+          {node}
+        </MasonryGridItem>
       ))}
     </div>
   );
 }
 
-function MasonryGridGroup({ group }: { group: [string, React.ReactNode][] }) {
-  return group.map(([id, node], i) => (
-    <MasonryGridItem key={id} groupIndex={i}>
-      {node}
-    </MasonryGridItem>
-  ));
-}
-
 function MasonryGridItem({
   children,
+  gridIndex,
   groupIndex,
+  resizeGridItem,
 }: ComponentProps<"div"> & {
+  gridIndex: number;
   groupIndex: number;
+  resizeGridItem(item: HTMLElement): void;
 }) {
   const itemRef = useRef<HTMLDivElement | null>(null);
 
@@ -83,7 +90,12 @@ function MasonryGridItem({
     <div
       ref={itemRef}
       className="grid-item"
-      style={{ "--group-index": groupIndex } as CSSProperties}
+      // style={
+      //   {
+      //     "--grid-index": gridIndex,
+      //     "--group-index": groupIndex,
+      //   } as CSSProperties
+      // }
     >
       <div>{children}</div>
     </div>

@@ -1,45 +1,27 @@
 import {
   useRef,
   useLayoutEffect,
-  useState,
   type ComponentProps,
   type CSSProperties,
 } from "react";
-import { getSrcFromNodes, groupItems } from "../utils/get-src-from-node";
 import { resizeGridItem } from "../utils/resize-grid-item";
 import "./style.css";
+import MasonryGridSkeletonImage from "../masonry-grid-skeleton-image";
 
 const gridAutoRows = 2;
 
-function MasonryGrid({ children }: ComponentProps<"div">) {
-  const prevItemCount = useRef(0);
-  const groupSizes = useRef<number[]>([]);
-  const [gridItems, setGridItems] = useState<[string, React.ReactNode][][]>([]);
-
-  const items = Array.from(new Map(getSrcFromNodes(children)));
-
-  if (items.length > prevItemCount.current) {
-    const test = groupItems(items, groupSizes.current);
-    setGridItems(test.result);
-    groupSizes.current = test.groupSizes;
-    prevItemCount.current = items.length;
-  }
+function MasonryGridSkeleton() {
+  const itemCount = 20;
 
   return (
     <div className="masonry-grid" style={{ gridAutoRows }}>
-      {gridItems.map((items, i) => (
-        <MasonryGridGroup key={i} group={items} />
+      {Array.from({ length: itemCount }).map((_, i) => (
+        <MasonryGridItem key={i} groupIndex={i}>
+          <MasonryGridSkeletonImage />
+        </MasonryGridItem>
       ))}
     </div>
   );
-}
-
-function MasonryGridGroup({ group }: { group: [string, React.ReactNode][] }) {
-  return group.map(([id, node], i) => (
-    <MasonryGridItem key={id} groupIndex={i}>
-      {node}
-    </MasonryGridItem>
-  ));
 }
 
 function MasonryGridItem({
@@ -90,4 +72,4 @@ function MasonryGridItem({
   );
 }
 
-export default MasonryGrid;
+export default MasonryGridSkeleton;

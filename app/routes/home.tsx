@@ -5,6 +5,7 @@ import MasonryGrid from "~/components/masonry-grid";
 import MasonryGridImage from "~/components/masonry-grid-image";
 import type { Route } from "./+types/home";
 import type { SearchApiData } from "./api/search";
+import MasonryGridSkeleton from "~/components/masonry-grid-skeleton";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -71,7 +72,19 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
     }
   }, [term, actionData]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading)
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0,1fr)",
+          gap: "2rem",
+          padding: "2rem",
+        }}
+      >
+        <MasonryGridSkeleton />
+      </div>
+    );
 
   return (
     <div
@@ -89,7 +102,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         </Form>
       </div>
       {gridItems && (
-        <MasonryGrid>
+        <MasonryGrid key={term}>
           {gridItems.map((item) => (
             <div key={item.itemId} className="mg-card">
               <MasonryGridImage src={item.image?.imageUrl} />

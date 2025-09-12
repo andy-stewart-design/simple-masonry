@@ -34,6 +34,13 @@
   }
 }
 
+.mg-skeleton-image-wrapper {
+  img {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 @keyframes grid-item-in {
   from {
     opacity: 0;
