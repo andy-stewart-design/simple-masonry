@@ -60,3 +60,28 @@ export function getSrcFromNodes(children: ReactNode) {
     []
   );
 }
+
+export function getSrcFromNodes2(children: ReactNode, groupSizes: number[]) {
+  const allItems = Children.toArray(children).reduce<[string, ReactNode][]>(
+    (acc, child) => {
+      const src = findImageSrc(child);
+      if (src) acc.push([src, child]);
+      return acc;
+    },
+    []
+  );
+
+  const dedupedItems = Array.from(new Map(allItems));
+  const prevItemCount = groupSizes.reduce((acc, num) => acc + num, 0);
+  const nextGroupSizes = [...groupSizes, dedupedItems.length - prevItemCount];
+
+  const result: [string, ReactNode][][] = [];
+  let index = 0;
+
+  for (const len of nextGroupSizes) {
+    result.push(dedupedItems.slice(index, index + len));
+    index += len;
+  }
+
+  return { result, groupSizes: nextGroupSizes };
+}

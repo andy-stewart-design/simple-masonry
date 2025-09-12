@@ -1,18 +1,29 @@
 import {
   useCallback,
   useRef,
-  Children,
   useLayoutEffect,
   type ComponentProps,
   type CSSProperties,
+  useState,
+  Children,
 } from "react";
-import { getSrcFromNodes } from "~/utils/get-src-from-node";
+import { getSrcFromNodes, getSrcFromNodes2 } from "~/utils/get-src-from-node";
 import "./style.css";
 
 function MasonryGrid({ children }: ComponentProps<"div">) {
+  const [gridItems, setGridItems] = useState<[string, React.ReactNode][][]>([]);
   const gridRef = useRef<HTMLDivElement>(null);
-  const groupSize = useRef(Children.toArray(children).length);
-  const items = getSrcFromNodes(children);
+  const items = new Map(getSrcFromNodes(children));
+  const prevItemsSize = useRef(0);
+  const groupSize = useRef(items.size);
+  const groupSizes = useRef<number[]>([]);
+
+  if (items.size > prevItemsSize.current) {
+    const test = getSrcFromNodes2(children, groupSizes.current);
+    setGridItems(test.result);
+    groupSizes.current = test.groupSizes;
+    prevItemsSize.current = items.size;
+  }
 
   const resizeGridItem = useCallback((item: HTMLElement) => {
     const grid = gridRef.current;
@@ -31,18 +42,34 @@ function MasonryGrid({ children }: ComponentProps<"div">) {
 
   return (
     <div ref={gridRef} className="masonry-grid">
-      {Array.from(new Map(items)).map(([id, node], i) => (
-        <MasonryGridItem
-          key={id}
-          gridIndex={i}
-          groupIndex={i % groupSize.current}
+      {gridItems.map((items, i) => (
+        <MasonryGridGroup
+          key={i}
+          items={items}
           resizeGridItem={resizeGridItem}
-        >
-          {node}
-        </MasonryGridItem>
+        />
       ))}
     </div>
   );
+}
+
+function MasonryGridGroup({
+  items,
+  resizeGridItem,
+}: {
+  items: [string, React.ReactNode][];
+  resizeGridItem(item: HTMLElement): void;
+}) {
+  return items.map(([id, node], i) => (
+    <MasonryGridItem
+      key={id}
+      gridIndex={0}
+      groupIndex={i}
+      resizeGridItem={resizeGridItem}
+    >
+      {node}
+    </MasonryGridItem>
+  ));
 }
 
 function MasonryGridItem({
