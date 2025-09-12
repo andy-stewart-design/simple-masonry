@@ -13,7 +13,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-async function handleSearch(query: string, page = 0) {
+async function handleSearch(query: string) {
   const productResults = await searchByText(query, 30, 0);
 
   if (!productResults.success) {
@@ -25,8 +25,8 @@ async function handleSearch(query: string, page = 0) {
 }
 
 export async function loader() {
-  const data = await handleSearch("puma");
-  return { data, term: "puma" };
+  const data = await handleSearch("vuori");
+  return { data, term: "vuori" };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -34,7 +34,7 @@ export async function action({ request }: Route.ActionArgs) {
   let term = formData.get("title")?.toString();
 
   if (!term) return;
-  const data = await handleSearch(term, 0);
+  const data = await handleSearch(term);
   return { data, term };
 }
 
@@ -84,7 +84,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
     >
       <div>
         <Form ref={formRef} method="post">
-          <input type="text" name="title" defaultValue="puma" />
+          <input type="text" name="title" defaultValue={loaderData.term} />
           <button type="submit">Submit</button>
         </Form>
       </div>
