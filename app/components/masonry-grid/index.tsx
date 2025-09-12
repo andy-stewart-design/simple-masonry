@@ -1,9 +1,8 @@
 import {
   useCallback,
-  useEffect,
   useRef,
-  useState,
   Children,
+  useLayoutEffect,
   type ComponentProps,
   type CSSProperties,
 } from "react";
@@ -28,41 +27,6 @@ function MasonryGrid({ children }: ComponentProps<"div">) {
     item.style.gridRowEnd = "span " + rowSpan;
   }, []);
 
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return;
-
-    function resizeAllGridItems() {
-      document.querySelectorAll<HTMLElement>(".grid-item").forEach((item) => {
-        resizeGridItem(item);
-      });
-    }
-
-    const observer = new ResizeObserver(() => resizeAllGridItems());
-    observer.observe(grid);
-    resizeAllGridItems();
-
-    return () => {
-      observer.unobserve(grid);
-      observer.disconnect;
-    };
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    document.querySelectorAll<HTMLElement>(".grid-item").forEach((item) => {
-      item
-        .querySelector<HTMLImageElement>("img")
-        ?.addEventListener("load", () => resizeGridItem(item), {
-          signal,
-        });
-    });
-
-    return () => controller.abort();
-  }, [children]);
-
   if (!Array.isArray(children)) return null;
 
   return (
@@ -72,6 +36,7 @@ function MasonryGrid({ children }: ComponentProps<"div">) {
           key={id}
           gridIndex={i}
           groupIndex={i % groupSize.current}
+          resizeGridItem={resizeGridItem}
         >
           {node}
         </MasonryGridItem>
@@ -84,9 +49,42 @@ function MasonryGridItem({
   children,
   gridIndex,
   groupIndex,
-}: ComponentProps<"div"> & { gridIndex: number; groupIndex: number }) {
-  const [rowSpan, setRowSpan] = useState<number | undefined>(undefined);
+  resizeGridItem,
+}: ComponentProps<"div"> & {
+  gridIndex: number;
+  groupIndex: number;
+  resizeGridItem(item: HTMLElement): void;
+}) {
   const itemRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    const item = itemRef.current;
+    const image = item?.querySelector("img");
+    const target = item?.firstElementChild;
+    if (!item || !image || !target) return;
+
+    const observer = new ResizeObserver(() => resizeGridItem(item));
+    observer.observe(target);
+    resizeGridItem(item);
+
+    const onLoad = () => resizeGridItem(item);
+
+    if (image.complete) {
+      image
+        .decode?.()
+        .catch(() => {})
+        .finally(() => resizeGridItem(item));
+    } else {
+      const onLoad = () => resizeGridItem(item);
+      image.addEventListener("load", onLoad);
+    }
+
+    return () => {
+      observer.unobserve(target);
+      observer.disconnect();
+      image.removeEventListener("load", onLoad);
+    };
+  }, [resizeGridItem]);
 
   return (
     <div
@@ -96,7 +94,6 @@ function MasonryGridItem({
         {
           "--grid-index": gridIndex,
           "--group-index": groupIndex,
-          "--row-span": rowSpan,
         } as CSSProperties
       }
     >
