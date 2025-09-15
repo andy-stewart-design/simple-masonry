@@ -7,6 +7,7 @@ import {
   type ComponentProps,
   type CSSProperties,
 } from "react";
+import { LoadingProvider, useLoadingContext } from "./loading-provider";
 import { getAspectRatio } from "../utils/get-aspect-ratio";
 import { resizeGridItem } from "../utils/resize-grid-item";
 import "./style.css";
@@ -35,7 +36,7 @@ interface MasonryHeaderLinkProps extends BaseProps {
 }
 
 interface MasonryRootProps extends BaseProps {
-  //   loading?: boolean;
+  loading?: boolean;
   theme?: ThemeOption;
 }
 
@@ -45,12 +46,21 @@ interface MasonryGridProps extends ComponentProps<"div"> {
   // focusIndicatorLabel?: string;
 }
 
-interface MasonryGridItemProps extends ComponentProps<"div"> {
+interface MasonryGridGroupProps {
+  group: React.ReactNode[];
+  groupIndex: number;
+}
+
+interface MasonryGridItemProps extends BaseProps {
   groupIndex: number;
   groupItemIndex: number;
 }
 
-interface MGImageProps extends ComponentProps<"img"> {}
+interface MasonryGridImageProps extends ComponentProps<"img"> {}
+
+interface MasonryGridLoadMoreProps extends BaseProps {
+  onClick: () => void;
+}
 
 // -----------------------------------------------------------------
 // MASONRY GRID COMPONENTS
@@ -58,13 +68,15 @@ interface MGImageProps extends ComponentProps<"img"> {}
 
 function MasonryGridRoot(props: MasonryRootProps) {
   return (
-    <div
-      className={cn("masonry-grid-root", props.className)}
-      style={props.style}
-      data-theme={props.theme}
-    >
-      {props.children}
-    </div>
+    <LoadingProvider loading={props.loading}>
+      <div
+        className={cn("masonry-grid-root", props.className)}
+        style={props.style}
+        data-theme={props.theme}
+      >
+        {props.children}
+      </div>
+    </LoadingProvider>
   );
 }
 
@@ -113,6 +125,7 @@ function MasonryGridFilterBar({ children, className, style }: BaseProps) {
 }
 
 function MasonryGrid({ children, animateFirstGroup }: MasonryGridProps) {
+  const { setLoading } = useLoadingContext();
   const groupSizes = useRef<number[]>([]);
 
   const groupedItems = useMemo(() => {
@@ -123,6 +136,7 @@ function MasonryGrid({ children, animateFirstGroup }: MasonryGridProps) {
       groupSizes.current.push(childArray.length - prevItemCount);
     }
 
+    setLoading(false);
     return groupItems(childArray, groupSizes.current);
   }, [children]);
 
@@ -139,13 +153,7 @@ function MasonryGrid({ children, animateFirstGroup }: MasonryGridProps) {
   );
 }
 
-function MasonryGridGroup({
-  group,
-  groupIndex,
-}: {
-  group: React.ReactNode[];
-  groupIndex: number;
-}) {
+function MasonryGridGroup({ group, groupIndex }: MasonryGridGroupProps) {
   return group.map((node, i) => (
     <MasonryGridItem key={i} groupIndex={groupIndex} groupItemIndex={i}>
       {node}
@@ -153,11 +161,7 @@ function MasonryGridGroup({
   ));
 }
 
-function MasonryGridItem({
-  children,
-  groupIndex,
-  groupItemIndex,
-}: MasonryGridItemProps) {
+function MasonryGridItem(props: MasonryGridItemProps) {
   const itemRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
@@ -192,19 +196,49 @@ function MasonryGridItem({
   return (
     <div
       ref={itemRef}
-      className="grid-item"
-      data-group-index={groupIndex}
-      style={{ "--group-item-index": groupItemIndex } as CSSProperties}
+      className="masonry-grid-item"
+      data-group-index={props.groupIndex}
+      style={{ "--group-item-index": props.groupItemIndex } as CSSProperties}
     >
-      <div>{children}</div>
+      <div>{props.children}</div>
     </div>
   );
 }
 
-function MasonryGridImage(props: MGImageProps) {
+function MasonryGridImage(props: MasonryGridImageProps) {
   return (
-    <div className="mg-image-wrapper">
-      <img {...props} alt="" className="mg-image" />
+    <div className="masonry-grid-image-wrapper">
+      <img {...props} alt="" />
+    </div>
+  );
+}
+
+function MasonryGridLoadMore({
+  children,
+  onClick,
+  className,
+}: MasonryGridLoadMoreProps) {
+  const { loading, setLoading } = useLoadingContext();
+
+  function handleLoadMore() {
+    setLoading(true);
+    onClick();
+  }
+
+  return (
+    <div className={cn("masonry-grid-footer", className)}>
+      <button
+        // priority="tertiary"
+        // size="large"
+        onClick={handleLoadMore}
+        // bodyState={loading ? "loading" : "none"}
+        // disabled={loading}
+        // fluid
+        disabled={loading}
+        style={{ maxWidth: "240px" }}
+      >
+        {loading ? "Loading..." : children}
+      </button>
     </div>
   );
 }
@@ -229,14 +263,8 @@ function MasonryGridSkeletonImage() {
   const [aspect] = useState(getAspectRatio(Math.random(), Math.random()));
 
   return (
-    <div className="mg-image-wrapper mg-skeleton-image-wrapper">
-      <img
-        width={aspect.width}
-        height={aspect.height}
-        alt=""
-        className="mg-image"
-        aria-hidden
-      />
+    <div className="masonry-grid-image-wrapper masonry-grid-skeleton-image-wrapper">
+      <img width={aspect.width} height={aspect.height} alt="" aria-hidden />
     </div>
   );
 }
@@ -276,6 +304,7 @@ const EvoMasonry = {
   FilterBar: MasonryGridFilterBar,
   Items: MasonryGrid,
   Image: MasonryGridImage,
+  LoadMore: MasonryGridLoadMore,
 };
 
 export default EvoMasonry;

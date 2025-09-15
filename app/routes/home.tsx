@@ -102,23 +102,11 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
       {gridItems && (
         <EvoMasonry.Items key={term} animateFirstGroup={animateFirstLoad}>
           {gridItems.map((item) => (
-            // <Item key={item.itemId} item={item}></Item>
-            <div key={item.itemId} className="mg-card">
-              <EvoMasonry.Image src={item.image?.imageUrl} />
-              <p className="mg-title">{item.title}</p>
-              <p className="mg-price">
-                {item.price.value.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                })}
-              </p>
-            </div>
+            <Item key={item.itemId} item={item}></Item>
           ))}
         </EvoMasonry.Items>
       )}
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <button onClick={loadMore}>Load more</button>
-      </div>
+      <EvoMasonry.LoadMore onClick={loadMore}>Load more</EvoMasonry.LoadMore>
     </EvoMasonry.Root>
   );
 }
