@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Form } from "react-router";
 import { searchByText } from "~/utils/search";
+import EvoMasonry from "~/components/single-file";
 import MasonryGrid from "~/components/masonry-grid";
 import MasonryGridImage from "~/components/masonry-grid-image";
 import type { Route } from "./+types/home";
@@ -87,25 +88,23 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
     );
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "minmax(0,1fr)",
-        gap: "2rem",
-        padding: "2rem",
-      }}
-    >
-      <div>
+    <EvoMasonry.Root style={{ padding: "2rem" }}>
+      <EvoMasonry.Header>
+        <EvoMasonry.Title>Evo Masonry Grid</EvoMasonry.Title>
+        <EvoMasonry.HeaderLink href="/">See all</EvoMasonry.HeaderLink>
+      </EvoMasonry.Header>
+      <EvoMasonry.FilterBar>
         <Form ref={formRef} method="post">
           <input type="text" name="title" defaultValue={loaderData.term} />
           <button type="submit">Submit</button>
         </Form>
-      </div>
+      </EvoMasonry.FilterBar>
       {gridItems && (
-        <MasonryGrid key={term} animateFirstGroup={animateFirstLoad}>
+        <EvoMasonry.Items key={term} animateFirstGroup={animateFirstLoad}>
           {gridItems.map((item) => (
+            // <Item key={item.itemId} item={item}></Item>
             <div key={item.itemId} className="mg-card">
-              <MasonryGridImage src={item.image?.imageUrl} />
+              <EvoMasonry.Image src={item.image?.imageUrl} />
               <p className="mg-title">{item.title}</p>
               <p className="mg-price">
                 {item.price.value.toLocaleString("en-US", {
@@ -115,11 +114,26 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
               </p>
             </div>
           ))}
-        </MasonryGrid>
+        </EvoMasonry.Items>
       )}
       <div style={{ display: "flex", justifyContent: "center" }}>
         <button onClick={loadMore}>Load more</button>
       </div>
+    </EvoMasonry.Root>
+  );
+}
+
+function Item({ item }: { item: NonNullable<GridItems>[number] }) {
+  return (
+    <div key={item.itemId} className="mg-card">
+      <MasonryGridImage src={item.image?.imageUrl} />
+      <p className="mg-title">{item.title}</p>
+      <p className="mg-price">
+        {item.price.value.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        })}
+      </p>
     </div>
   );
 }
