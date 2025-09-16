@@ -26,6 +26,11 @@ interface BaseProps {
   className?: string;
 }
 
+interface MasonryRootProps extends BaseProps {
+  loading?: boolean;
+  theme?: ThemeOption;
+}
+
 interface MasonryTitleProps extends BaseProps {
   as?: "h1" | "h2" | "h3" | "h4";
 }
@@ -33,11 +38,6 @@ interface MasonryTitleProps extends BaseProps {
 interface MasonryHeaderLinkProps extends BaseProps {
   href?: string;
   onClick?: () => void;
-}
-
-interface MasonryRootProps extends BaseProps {
-  loading?: boolean;
-  theme?: ThemeOption;
 }
 
 interface MasonryGridProps extends ComponentProps<"div"> {
@@ -60,6 +60,19 @@ interface MasonryGridImageProps extends ComponentProps<"img"> {}
 
 interface MasonryGridLoadMoreProps extends BaseProps {
   onClick: () => void;
+}
+
+interface MasonrySkeletonGridProps {
+  itemCount?: number;
+  className?: string;
+  style?: CSSProperties;
+}
+
+interface MasonrySkeletonItemsProps {
+  itemCount?: number;
+  className?: string;
+  style?: CSSProperties;
+  children: React.ReactNode;
 }
 
 // -----------------------------------------------------------------
@@ -124,7 +137,7 @@ function MasonryGridFilterBar({ children, className, style }: BaseProps) {
   );
 }
 
-function MasonryGrid({ children, animateFirstGroup }: MasonryGridProps) {
+function MasonryGridItems({ children, animateFirstGroup }: MasonryGridProps) {
   const { setLoading } = useLoadingContext();
   const groupSizes = useRef<number[]>([]);
 
@@ -226,20 +239,38 @@ function MasonryGridLoadMore({
   }
 
   return (
-    <div className={cn("masonry-grid-footer", className)}>
+    <div className="masonry-grid-footer">
       <button
-        // priority="tertiary"
-        // size="large"
+        className={className}
         onClick={handleLoadMore}
-        // bodyState={loading ? "loading" : "none"}
-        // disabled={loading}
-        // fluid
         disabled={loading}
         style={{ maxWidth: "240px" }}
       >
-        {loading ? "Loading..." : children}
+        <span>{children}</span>
+        <ProgressSpinner />
       </button>
     </div>
+  );
+}
+
+function ProgressSpinner() {
+  return (
+    <svg viewBox="0 0 24 24" width={24} height={24} fill="none">
+      <path
+        d="M22.5 12A10.5 10.5 0 1 1 9.514 1.798"
+        stroke="var(--color-foreground-primary, #fff)"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+      <path
+        d="M14.606 1.829a10.5 10.5 0 0 1 4.056 2.055 10.499 10.499 0 0 1 2.806 3.577"
+        stroke="var(--color-foreground-primary, #fff)"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+    </svg>
   );
 }
 
@@ -247,10 +278,69 @@ function MasonryGridLoadMore({
 // MASONRY SKELETON COMPONENTS
 // -----------------------------------------------------------------
 
-function MasonryGridSkeleton({ itemCount = 20 }: { itemCount?: number }) {
+function MasonrySkeletonRoot(props: MasonryRootProps) {
   return (
-    <div className="masonry-grid" style={{ gridAutoRows: ROW_HEIGHT }}>
-      {Array.from({ length: itemCount }).map((_, i) => (
+    <div
+      className={cn("masonry-grid-root", props.className)}
+      style={props.style}
+      data-theme={props.theme}
+    >
+      {props.children}
+    </div>
+  );
+}
+
+function MasonrySkeletonTitle(props: MasonryTitleProps) {
+  const Tag = props.as || "h3";
+
+  return (
+    <header
+      className={cn("masonry-grid-header", props.className)}
+      style={props.style}
+    >
+      <Tag className="masonry-grid-title">
+        <span data-skeleton aria-hidden>
+          <span>{props.children}</span>
+        </span>
+      </Tag>
+    </header>
+  );
+}
+
+function MasonrySkeletonFilterBar({ children, className, style }: BaseProps) {
+  return (
+    <div className={cn("masonry-grid-filter-bar", className)} style={style}>
+      <span data-skeleton aria-hidden>
+        <span>{children}</span>
+      </span>
+    </div>
+  );
+}
+
+function MasonrySkeletonItems(props: MasonrySkeletonItemsProps) {
+  const item = Children.toArray(props.children)[0];
+
+  return (
+    <div
+      className={cn("masonry-grid", props.className)}
+      style={{ ...props.style, gridAutoRows: ROW_HEIGHT }}
+    >
+      {Array.from({ length: props.itemCount ?? 20 }).map((_, i) => (
+        <MasonryGridItem key={i} groupIndex={i} groupItemIndex={i}>
+          {item}
+        </MasonryGridItem>
+      ))}
+    </div>
+  );
+}
+
+function MasonrySkeletonGrid(props: MasonrySkeletonGridProps) {
+  return (
+    <div
+      className={cn("masonry-grid", props.className)}
+      style={{ ...props.style, gridAutoRows: ROW_HEIGHT }}
+    >
+      {Array.from({ length: props.itemCount ?? 20 }).map((_, i) => (
         <MasonryGridItem key={i} groupIndex={i} groupItemIndex={i}>
           <MasonryGridSkeletonImage />
         </MasonryGridItem>
@@ -296,15 +386,25 @@ export function groupItems<T>(items: T[], groupSizes: number[]) {
 // EXPORTS
 // -----------------------------------------------------------------
 
-const EvoMasonry = {
+const MasonryGrid = {
   Root: MasonryGridRoot,
   Header: MasonryGridHeader,
   Title: MasonryGridTitle,
   HeaderLink: MasonryGridHeaderLink,
   FilterBar: MasonryGridFilterBar,
-  Items: MasonryGrid,
+  Items: MasonryGridItems,
   Image: MasonryGridImage,
   LoadMore: MasonryGridLoadMore,
 };
 
-export default EvoMasonry;
+const MasonrySkeleton = {
+  Root: MasonrySkeletonRoot,
+  Title: MasonrySkeletonTitle,
+  FilterBar: MasonrySkeletonFilterBar,
+  Items: MasonrySkeletonItems,
+  Image: MasonryGridSkeletonImage,
+  Grid: MasonrySkeletonGrid,
+};
+
+export default MasonryGrid;
+export { MasonrySkeleton };

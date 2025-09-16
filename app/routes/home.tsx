@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Form } from "react-router";
 import { searchByText } from "~/utils/search";
-import EvoMasonry from "~/components/single-file";
-import MasonryGrid from "~/components/masonry-grid";
-import MasonryGridImage from "~/components/masonry-grid-image";
+import MasonryGrid, { MasonrySkeleton } from "~/components/single-file";
 import type { Route } from "./+types/home";
 import type { SearchApiData } from "./api/search";
 import MasonryGridSkeleton from "~/components/masonry-grid-skeleton";
@@ -73,54 +71,74 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
     }
   }, [term, actionData]);
 
-  if (loading)
+  if (loading) {
     return (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0,1fr)",
-          gap: "2rem",
-          padding: "2rem",
-        }}
-      >
-        <MasonryGridSkeleton />
+      <div style={{ padding: "2rem" }}>
+        <MasonrySkeleton.Root>
+          <MasonrySkeleton.Title>Evo Masonry Grid</MasonrySkeleton.Title>
+          <MasonrySkeleton.FilterBar>
+            <Form ref={formRef} method="post">
+              <input type="text" name="title" defaultValue={loaderData.term} />
+              <button type="submit">Submit</button>
+            </Form>
+          </MasonrySkeleton.FilterBar>
+          <MasonrySkeleton.Items key={term}>
+            <SkeletonItem />
+          </MasonrySkeleton.Items>
+          <SkeletonItem />
+        </MasonrySkeleton.Root>
       </div>
     );
+  }
 
   return (
-    <EvoMasonry.Root style={{ padding: "2rem" }}>
-      <EvoMasonry.Header>
-        <EvoMasonry.Title>Evo Masonry Grid</EvoMasonry.Title>
-        <EvoMasonry.HeaderLink href="/">See all</EvoMasonry.HeaderLink>
-      </EvoMasonry.Header>
-      <EvoMasonry.FilterBar>
+    <MasonryGrid.Root style={{ padding: "2rem" }}>
+      <MasonryGrid.Header>
+        <MasonryGrid.Title>Evo Masonry Grid</MasonryGrid.Title>
+        <MasonryGrid.HeaderLink href="/">See all</MasonryGrid.HeaderLink>
+      </MasonryGrid.Header>
+      <MasonryGrid.FilterBar>
         <Form ref={formRef} method="post">
           <input type="text" name="title" defaultValue={loaderData.term} />
           <button type="submit">Submit</button>
         </Form>
-      </EvoMasonry.FilterBar>
+      </MasonryGrid.FilterBar>
       {gridItems && (
-        <EvoMasonry.Items key={term} animateFirstGroup={animateFirstLoad}>
+        <MasonryGrid.Items key={term} animateFirstGroup={animateFirstLoad}>
           {gridItems.map((item) => (
             <Item key={item.itemId} item={item}></Item>
           ))}
-        </EvoMasonry.Items>
+        </MasonryGrid.Items>
       )}
-      <EvoMasonry.LoadMore onClick={loadMore}>Load more</EvoMasonry.LoadMore>
-    </EvoMasonry.Root>
+      <MasonryGrid.LoadMore onClick={loadMore}>Load more</MasonryGrid.LoadMore>
+    </MasonryGrid.Root>
   );
 }
 
 function Item({ item }: { item: NonNullable<GridItems>[number] }) {
   return (
-    <div key={item.itemId} className="mg-card">
-      <MasonryGridImage src={item.image?.imageUrl} />
+    <div className="mg-card">
+      <MasonryGrid.Image src={item.image?.imageUrl} />
       <p className="mg-title">{item.title}</p>
       <p className="mg-price">
         {item.price.value.toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
         })}
+      </p>
+    </div>
+  );
+}
+
+function SkeletonItem() {
+  return (
+    <div className="mg-card">
+      <MasonrySkeleton.Image />
+      <p className="mg-title" data-skeleton>
+        <span>Placeholder item title</span>
+      </p>
+      <p data-skeleton>
+        <span>$40.00</span>
       </p>
     </div>
   );
