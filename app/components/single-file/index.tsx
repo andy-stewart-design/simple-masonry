@@ -241,8 +241,6 @@ function MasonryGridImage({ width, height, ...props }: MasonryGridImageProps) {
       if (img.naturalHeight && img.naturalWidth) {
         setLoaded(true);
         const aspect = getAspectRatio(img.naturalWidth, img.naturalHeight);
-        console.log(img.naturalWidth, img.naturalHeight, aspect);
-
         setRect({ width: aspect.width, height: aspect.height });
         img.removeEventListener("load", handleLoad);
       }
@@ -316,6 +314,14 @@ function ProgressSpinner() {
 // -----------------------------------------------------------------
 
 function MasonrySkeletonRoot(props: MasonryRootProps) {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(true);
+  }, []);
+
+  if (!loaded) return null;
+
   return (
     <SkeletonProvider>
       <div
@@ -374,6 +380,14 @@ function MasonrySkeletonItems(props: MasonrySkeletonItemsProps) {
 }
 
 function MasonrySkeletonGrid(props: MasonrySkeletonGridProps) {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(true);
+  }, []);
+
+  if (!loaded) return null;
+
   return (
     <SkeletonProvider>
       <div
@@ -392,7 +406,7 @@ function MasonrySkeletonGrid(props: MasonrySkeletonGridProps) {
 
 function MasonryGridSkeletonImage() {
   const { getAspectRatio } = useSkeletonContext();
-  const [aspect] = useState(getAspectRatio());
+  const [aspect] = useState(() => getAspectRatio());
 
   return (
     <div className="masonry-grid-image-wrapper masonry-grid-skeleton-image-wrapper">
