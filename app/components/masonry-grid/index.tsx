@@ -1,31 +1,54 @@
-import { useRef, type ComponentProps, type CSSProperties } from "react";
-import { getSrcFromNodes } from "~/utils/get-src-from-node";
+import { useRef, useState, type ComponentProps } from "react";
+import MasonryGridItem from "../masonry-grid-item";
+import { getSrcFromNodes, groupItems } from "../utils/get-src-from-node";
 import "./style.css";
 
-function MasonryGrid({ children }: ComponentProps<"div">) {
-  if (!Array.isArray(children)) return null;
+const gridAutoRows = 2;
 
-  const groupSize = useRef(children.length);
-  const items = getSrcFromNodes(children);
+interface MasonryGridProps extends ComponentProps<"div"> {
+  animateFirstGroup?: boolean;
+  // reduceMotion?: boolean;
+}
+
+function MasonryGrid({ children, animateFirstGroup }: MasonryGridProps) {
+  const prevItemCount = useRef(0);
+  const groupSizes = useRef<number[]>([]);
+  const [gridItems, setGridItems] = useState<[string, React.ReactNode][][]>([]);
+
+  const items = Array.from(new Map(getSrcFromNodes(children)));
+
+  if (items.length > prevItemCount.current) {
+    const test = groupItems(items, groupSizes.current);
+    setGridItems(test.result);
+    groupSizes.current = test.groupSizes;
+    prevItemCount.current = items.length;
+  }
 
   return (
-    <div className="masonry-grid">
-      {Array.from(new Map(items)).map(([id, node], i) => (
-        <div
-          key={id}
-          className="grid-item"
-          style={
-            {
-              "--grid-index": i,
-              "--group-index": i % groupSize.current,
-            } as CSSProperties
-          }
-        >
-          {node}
-        </div>
+    <div
+      className="masonry-grid"
+      style={{ gridAutoRows }}
+      data-animate-first-group={animateFirstGroup}
+    >
+      {gridItems.map((items, i) => (
+        <MasonryGridGroup key={i} group={items} groupIndex={i} />
       ))}
     </div>
   );
+}
+
+function MasonryGridGroup({
+  group,
+  groupIndex,
+}: {
+  group: [string, React.ReactNode][];
+  groupIndex: number;
+}) {
+  return group.map(([id, node], i) => (
+    <MasonryGridItem key={id} groupIndex={groupIndex} groupItemIndex={i}>
+      {node}
+    </MasonryGridItem>
+  ));
 }
 
 export default MasonryGrid;

@@ -60,3 +60,21 @@ export function getSrcFromNodes(children: ReactNode) {
     []
   );
 }
+
+export function groupItems(
+  items: ReturnType<typeof getSrcFromNodes>,
+  groupSizes: number[]
+) {
+  const prevItemCount = groupSizes.reduce((acc, num) => acc + num, 0);
+  const nextGroupSizes = [...groupSizes, items.length - prevItemCount];
+
+  const result: [string, ReactNode][][] = [];
+  let index = 0;
+
+  for (const len of nextGroupSizes) {
+    result.push(items.slice(index, index + len));
+    index += len;
+  }
+
+  return { result, groupSizes: nextGroupSizes };
+}
