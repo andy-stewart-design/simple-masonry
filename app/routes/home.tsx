@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Form } from "react-router";
 import { searchByText } from "~/utils/search";
-import MasonryGrid from "~/components/masonry-grid";
-import MasonryGridImage from "~/components/masonry-grid-image";
+import MasonryGrid, { MasonrySkeleton } from "~/components/single-file";
 import type { Route } from "./+types/home";
 import type { SearchApiData } from "./api/search";
+import MasonryGridSkeleton from "~/components/masonry-grid-skeleton";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -13,7 +13,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-async function handleSearch(query: string, page = 0) {
+async function handleSearch(query: string) {
   const productResults = await searchByText(query, 30, 0);
 
   if (!productResults.success) {
@@ -25,8 +25,8 @@ async function handleSearch(query: string, page = 0) {
 }
 
 export async function loader() {
-  const data = await handleSearch("puma");
-  return { data, term: "puma" };
+  const data = await handleSearch("vuori");
+  return { data, term: "vuori" };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -34,7 +34,7 @@ export async function action({ request }: Route.ActionArgs) {
   let term = formData.get("title")?.toString();
 
   if (!term) return;
-  const data = await handleSearch(term, 0);
+  const data = await handleSearch(term);
   return { data, term };
 }
 
@@ -46,7 +46,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
   const [term, setTerm] = useState(actionData?.term ?? loaderData.term);
   const [page, setPage] = useState(0);
   const [gridItems, setGridItems] = useState<GridItems>(loaderData.data);
-  // const [animateFirstLoad, setAnimateFirstLoad] = useState(false);
+  const [animateFirstLoad, setAnimateFirstLoad] = useState(false);
 
   async function loadMore() {
     const res = await fetch(`/api/search/${term}?page=${page + 1}`);
@@ -65,48 +65,82 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
     if (term === actionData?.term) return;
 
     if (actionData?.data) {
-      // setAnimateFirstLoad(true);
+      setAnimateFirstLoad(true);
       setGridItems(actionData.data);
       setTerm(actionData.term);
     }
   }, [term, actionData]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div style={{ padding: "2rem" }}>
+        <MasonrySkeleton.Root>
+          <MasonrySkeleton.Title>Evo Masonry Grid</MasonrySkeleton.Title>
+          <MasonrySkeleton.FilterBar>
+            <Form ref={formRef} method="post">
+              <input type="text" name="title" defaultValue={loaderData.term} />
+              <button type="submit">Submit</button>
+            </Form>
+          </MasonrySkeleton.FilterBar>
+          <MasonrySkeleton.Items key={term}>
+            <SkeletonItem />
+          </MasonrySkeleton.Items>
+        </MasonrySkeleton.Root>
+      </div>
+    );
+  }
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "minmax(0,1fr)",
-        gap: "2rem",
-        padding: "2rem",
-      }}
-    >
-      <div>
+    <MasonryGrid.Root style={{ padding: "2rem" }} theme="system">
+      <MasonryGrid.Header>
+        <MasonryGrid.Title>Evo Masonry Grid</MasonryGrid.Title>
+        <MasonryGrid.HeaderLink href="/">See all</MasonryGrid.HeaderLink>
+      </MasonryGrid.Header>
+      <MasonryGrid.FilterBar>
         <Form ref={formRef} method="post">
-          <input type="text" name="title" defaultValue="puma" />
+          <input type="text" name="title" defaultValue={loaderData.term} />
           <button type="submit">Submit</button>
         </Form>
-      </div>
+      </MasonryGrid.FilterBar>
       {gridItems && (
-        <MasonryGrid>
+        <MasonryGrid.Items key={term} animateFirstGroup="reduce">
           {gridItems.map((item) => (
-            <div key={item.itemId} className="mg-card">
-              <MasonryGridImage src={item.image?.imageUrl} />
-              <p className="mg-title">{item.title}</p>
-              <p className="mg-price">
-                {item.price.value.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                })}
-              </p>
-            </div>
+            <Item key={item.itemId} item={item}></Item>
           ))}
-        </MasonryGrid>
+        </MasonryGrid.Items>
       )}
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <button onClick={loadMore}>Load more</button>
+      <MasonryGrid.LoadMore onClick={loadMore}>Load more</MasonryGrid.LoadMore>
+    </MasonryGrid.Root>
+  );
+}
+
+function Item({ item }: { item: NonNullable<GridItems>[number] }) {
+  return (
+    <a href="#" style={{ color: "unset", textDecoration: "unset" }}>
+      <div className="mg-card">
+        <MasonryGrid.Image src={item.image?.imageUrl} />
+        <p className="mg-title">{item.title}</p>
+        <p className="mg-price">
+          {item.price.value.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD",
+          })}
+        </p>
       </div>
+    </a>
+  );
+}
+
+function SkeletonItem() {
+  return (
+    <div className="mg-card">
+      <MasonrySkeleton.Image />
+      <p className="mg-title" data-skeleton>
+        <span>Placeholder item title</span>
+      </p>
+      <p data-skeleton>
+        <span>$40.00</span>
+      </p>
     </div>
   );
 }
