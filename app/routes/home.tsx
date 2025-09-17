@@ -85,7 +85,6 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
           <MasonrySkeleton.Items key={term}>
             <SkeletonItem />
           </MasonrySkeleton.Items>
-          <SkeletonItem />
         </MasonrySkeleton.Root>
       </div>
     );

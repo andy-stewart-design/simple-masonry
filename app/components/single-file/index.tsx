@@ -4,12 +4,11 @@ import {
   useRef,
   useState,
   Children,
+  memo,
   type ComponentProps,
   type CSSProperties,
 } from "react";
 import { LoadingProvider, useLoadingContext } from "./loading-provider";
-import { getAspectRatio } from "../utils/get-aspect-ratio";
-import { resizeGridItem } from "../utils/resize-grid-item";
 import "./style.css";
 
 const ROW_HEIGHT = 2;
@@ -42,7 +41,7 @@ interface MasonryHeaderLinkProps extends BaseProps {
 
 interface MasonryGridProps extends ComponentProps<"div"> {
   animateFirstGroup?: boolean;
-  // reduceMotion?: boolean;
+  reduceMotion?: boolean;
   // focusIndicatorLabel?: string;
 }
 
@@ -137,27 +136,30 @@ function MasonryGridFilterBar({ children, className, style }: BaseProps) {
   );
 }
 
-function MasonryGridItems({ children, animateFirstGroup }: MasonryGridProps) {
+const MasonryGridItems = memo(__MasonryGridItems);
+
+function __MasonryGridItems(props: MasonryGridProps) {
   const { setLoading } = useLoadingContext();
   const groupSizes = useRef<number[]>([]);
 
   const groupedItems = useMemo(() => {
-    const childArray = Children.toArray(children);
+    const childArray = Children.toArray(props.children);
     const prevItemCount = groupSizes.current.reduce((acc, num) => acc + num, 0);
 
     if (childArray.length > prevItemCount) {
       groupSizes.current.push(childArray.length - prevItemCount);
+      requestAnimationFrame(() => setLoading(false));
     }
 
-    setLoading(false);
     return groupItems(childArray, groupSizes.current);
-  }, [children]);
+  }, [props.children, setLoading]);
 
   return (
     <div
       className="masonry-grid"
       style={{ gridAutoRows: ROW_HEIGHT }}
-      data-animate-first-group={animateFirstGroup}
+      data-animate-first-group={props.animateFirstGroup}
+      data-reduce-motion={props.reduceMotion}
     >
       {groupedItems.map((items, i) => (
         <MasonryGridGroup key={i} group={items} groupIndex={i} />
@@ -255,17 +257,21 @@ function MasonryGridLoadMore({
 
 function ProgressSpinner() {
   return (
-    <svg viewBox="0 0 24 24" width={24} height={24} fill="none">
+    <svg
+      className="masonry-progress-spinner"
+      viewBox="0 0 24 24"
+      width={24}
+      height={24}
+      fill="none"
+    >
       <path
         d="M22.5 12A10.5 10.5 0 1 1 9.514 1.798"
-        stroke="var(--color-foreground-primary, #fff)"
         stroke-width="3"
         stroke-linecap="round"
         stroke-linejoin="round"
       ></path>
       <path
         d="M14.606 1.829a10.5 10.5 0 0 1 4.056 2.055 10.499 10.499 0 0 1 2.806 3.577"
-        stroke="var(--color-foreground-primary, #fff)"
         stroke-width="3"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -380,6 +386,41 @@ export function groupItems<T>(items: T[], groupSizes: number[]) {
   }
 
   return result;
+}
+
+function getAspectRatio(_width: number, _height: number) {
+  const width = 800;
+  const originalRatio = _width / _height;
+  let height: number;
+
+  switch (true) {
+    case originalRatio < 0.66:
+      height = (width / 9) * 16;
+      return { width, height, ratio: "9/16" };
+    case originalRatio < 0.875:
+      height = (width / 3) * 4;
+      return { width, height, ratio: "3/4" };
+    case originalRatio < 1.125:
+      height = width;
+      return { width, height, ratio: "1/1" };
+    case originalRatio < 1.66:
+      height = (width / 4) * 3;
+      return { width, height, ratio: "4/3" };
+    default:
+      height = (width / 16) * 9;
+      return { width, height, ratio: "16/9" };
+  }
+}
+
+function resizeGridItem(item: HTMLElement) {
+  const content = item.firstElementChild;
+  if (!content) return;
+
+  const gridRowEnd = Math.ceil(
+    content.getBoundingClientRect().height / ROW_HEIGHT
+  );
+
+  item.style.gridRowEnd = "span " + gridRowEnd;
 }
 
 // -----------------------------------------------------------------
