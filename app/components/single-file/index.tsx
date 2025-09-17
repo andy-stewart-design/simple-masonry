@@ -7,10 +7,11 @@ import {
   memo,
   type ComponentProps,
   type CSSProperties,
+  useEffect,
 } from "react";
 import { LoadingProvider, useLoadingContext } from "./loading-provider";
-import "./style.css";
 import { SkeletonProvider, useSkeletonContext } from "./skeleton-provider";
+import "./style.css";
 
 const ROW_HEIGHT = 2;
 
@@ -222,10 +223,43 @@ function MasonryGridItem(props: MasonryGridItemProps) {
   );
 }
 
-function MasonryGridImage(props: MasonryGridImageProps) {
+function MasonryGridImage({ width, height, ...props }: MasonryGridImageProps) {
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [rect, setRect] = useState(() => {
+    const w = parseFloat((width ?? 0).toString());
+    const h = parseFloat((height ?? 0).toString());
+    if (w && h) return { width: w, height: h };
+    else return getAspectRatio(Math.random() * 800, Math.random() * 800);
+  });
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img) return;
+
+    const handleLoad = () => {
+      if (img.naturalHeight && img.naturalWidth) {
+        setLoaded(true);
+        const aspect = getAspectRatio(img.naturalWidth, img.naturalHeight);
+        console.log(img.naturalWidth, img.naturalHeight, aspect);
+
+        setRect({ width: aspect.width, height: aspect.height });
+        img.removeEventListener("load", handleLoad);
+      }
+    };
+
+    if (img.complete) handleLoad();
+    else img.addEventListener("load", handleLoad);
+    return () => img.removeEventListener("load", handleLoad);
+  }, []);
+
   return (
-    <div className="masonry-grid-image-wrapper">
-      <img {...props} alt="" />
+    <div className="masonry-grid-image-wrapper" data-loaded={loaded}>
+      <img
+        ref={imgRef}
+        {...props}
+        style={{ aspectRatio: rect.width / rect.height }}
+      />
     </div>
   );
 }
@@ -398,19 +432,19 @@ function getAspectRatio(_width: number, _height: number) {
   switch (true) {
     case originalRatio < 0.66:
       height = (width / 9) * 16;
-      return { width, height, ratio: "9/16" };
+      return { width, height };
     case originalRatio < 0.875:
       height = (width / 3) * 4;
-      return { width, height, ratio: "3/4" };
+      return { width, height };
     case originalRatio < 1.125:
       height = width;
-      return { width, height, ratio: "1/1" };
+      return { width, height };
     case originalRatio < 1.66:
       height = (width / 4) * 3;
-      return { width, height, ratio: "4/3" };
+      return { width, height };
     default:
       height = (width / 16) * 9;
-      return { width, height, ratio: "16/9" };
+      return { width, height };
   }
 }
 
