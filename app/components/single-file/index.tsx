@@ -18,6 +18,7 @@ const ROW_HEIGHT = 2;
 // -----------------------------------------------------------------
 
 type ThemeOption = "light" | "dark" | "system";
+type AnimateFirstOption = "true" | "false" | "reduce";
 
 interface BaseProps {
   children: React.ReactNode;
@@ -40,7 +41,7 @@ interface MasonryHeaderLinkProps extends BaseProps {
 }
 
 interface MasonryGridProps extends ComponentProps<"div"> {
-  animateFirstGroup?: boolean;
+  animateFirstGroup?: boolean | AnimateFirstOption;
   reduceMotion?: boolean;
   // focusIndicatorLabel?: string;
 }
@@ -242,12 +243,7 @@ function MasonryGridLoadMore({
 
   return (
     <div className="masonry-grid-footer">
-      <button
-        className={className}
-        onClick={handleLoadMore}
-        disabled={loading}
-        style={{ maxWidth: "240px" }}
-      >
+      <button className={className} onClick={handleLoadMore} disabled={loading}>
         <span>{children}</span>
         <ProgressSpinner />
       </button>
@@ -258,7 +254,7 @@ function MasonryGridLoadMore({
 function ProgressSpinner() {
   return (
     <svg
-      className="masonry-progress-spinner"
+      className="masonry-grid-progress-spinner"
       viewBox="0 0 24 24"
       width={24}
       height={24}
@@ -266,15 +262,15 @@ function ProgressSpinner() {
     >
       <path
         d="M22.5 12A10.5 10.5 0 1 1 9.514 1.798"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       ></path>
       <path
         d="M14.606 1.829a10.5 10.5 0 0 1 4.056 2.055 10.499 10.499 0 0 1 2.806 3.577"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       ></path>
     </svg>
   );

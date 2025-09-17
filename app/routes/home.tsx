@@ -91,7 +91,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
   }
 
   return (
-    <MasonryGrid.Root style={{ padding: "2rem" }}>
+    <MasonryGrid.Root style={{ padding: "2rem" }} theme="system">
       <MasonryGrid.Header>
         <MasonryGrid.Title>Evo Masonry Grid</MasonryGrid.Title>
         <MasonryGrid.HeaderLink href="/">See all</MasonryGrid.HeaderLink>
@@ -103,7 +103,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         </Form>
       </MasonryGrid.FilterBar>
       {gridItems && (
-        <MasonryGrid.Items key={term} animateFirstGroup={animateFirstLoad}>
+        <MasonryGrid.Items key={term} animateFirstGroup="reduce">
           {gridItems.map((item) => (
             <Item key={item.itemId} item={item}></Item>
           ))}
@@ -116,16 +116,18 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
 
 function Item({ item }: { item: NonNullable<GridItems>[number] }) {
   return (
-    <div className="mg-card">
-      <MasonryGrid.Image src={item.image?.imageUrl} />
-      <p className="mg-title">{item.title}</p>
-      <p className="mg-price">
-        {item.price.value.toLocaleString("en-US", {
-          style: "currency",
-          currency: "USD",
-        })}
-      </p>
-    </div>
+    <a href="#" style={{ color: "unset", textDecoration: "unset" }}>
+      <div className="mg-card">
+        <MasonryGrid.Image src={item.image?.imageUrl} />
+        <p className="mg-title">{item.title}</p>
+        <p className="mg-price">
+          {item.price.value.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD",
+          })}
+        </p>
+      </div>
+    </a>
   );
 }
 

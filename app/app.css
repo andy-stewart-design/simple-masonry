@@ -3,12 +3,10 @@ body {
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
-  color-scheme: dark;
-  background: black;
-  /* @media (prefers-color-scheme: dark) {
+  @media (prefers-color-scheme: dark) {
     color-scheme: dark;
     background: black;
-  } */
+  }
 }
 
 .mg-card {
