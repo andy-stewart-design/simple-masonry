@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -7,7 +8,6 @@ import {
   memo,
   type ComponentProps,
   type CSSProperties,
-  useEffect,
 } from "react";
 import { LoadingProvider, useLoadingContext } from "./loading-provider";
 import { SkeletonProvider, useSkeletonContext } from "./skeleton-provider";
