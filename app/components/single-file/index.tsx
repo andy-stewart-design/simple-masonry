@@ -10,6 +10,7 @@ import {
 } from "react";
 import { LoadingProvider, useLoadingContext } from "./loading-provider";
 import "./style.css";
+import { SkeletonProvider, useSkeletonContext } from "./skeleton-provider";
 
 const ROW_HEIGHT = 2;
 
@@ -282,13 +283,15 @@ function ProgressSpinner() {
 
 function MasonrySkeletonRoot(props: MasonryRootProps) {
   return (
-    <div
-      className={cn("masonry-grid-root", props.className)}
-      style={props.style}
-      data-theme={props.theme}
-    >
-      {props.children}
-    </div>
+    <SkeletonProvider>
+      <div
+        className={cn("masonry-grid-root", props.className)}
+        style={props.style}
+        data-theme={props.theme}
+      >
+        {props.children}
+      </div>
+    </SkeletonProvider>
   );
 }
 
@@ -338,21 +341,24 @@ function MasonrySkeletonItems(props: MasonrySkeletonItemsProps) {
 
 function MasonrySkeletonGrid(props: MasonrySkeletonGridProps) {
   return (
-    <div
-      className={cn("masonry-grid", props.className)}
-      style={{ ...props.style, gridAutoRows: ROW_HEIGHT }}
-    >
-      {Array.from({ length: props.itemCount ?? 20 }).map((_, i) => (
-        <MasonryGridItem key={i} groupIndex={i} groupItemIndex={i}>
-          <MasonryGridSkeletonImage />
-        </MasonryGridItem>
-      ))}
-    </div>
+    <SkeletonProvider>
+      <div
+        className={cn("masonry-grid", props.className)}
+        style={{ ...props.style, gridAutoRows: ROW_HEIGHT }}
+      >
+        {Array.from({ length: props.itemCount ?? 20 }).map((_, i) => (
+          <MasonryGridItem key={i} groupIndex={i} groupItemIndex={i}>
+            <MasonryGridSkeletonImage />
+          </MasonryGridItem>
+        ))}
+      </div>
+    </SkeletonProvider>
   );
 }
 
 function MasonryGridSkeletonImage() {
-  const [aspect] = useState(getAspectRatio(Math.random(), Math.random()));
+  const { getAspectRatio } = useSkeletonContext();
+  const [aspect] = useState(getAspectRatio());
 
   return (
     <div className="masonry-grid-image-wrapper masonry-grid-skeleton-image-wrapper">
