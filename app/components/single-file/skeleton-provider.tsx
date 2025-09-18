@@ -1,13 +1,7 @@
-import {
-  createContext,
-  useRef,
-  useCallback,
-  useContext,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, type ReactNode } from "react";
 
 type SkeletonContextType = {
-  getAspectRatio(): { width: number; height: number; ratio: string };
+  getAspectRatio(seed: string): { width: number; height: number };
 };
 
 const SkeletonContext = createContext<SkeletonContextType | undefined>(
@@ -18,24 +12,24 @@ interface SkeletonProviderProps {
   children: ReactNode;
 }
 
+function hashSeed(seed: string) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
 const aspectRatios = [
-  { width: 800, height: 1066.6667, ratio: "3/4" },
-  { width: 800, height: 1422.2223, ratio: "9/16" },
-  { width: 800, height: 800, ratio: "1/1" },
-  { width: 800, height: 600, ratio: "4/3" },
-  { width: 800, height: 450, ratio: "16/9" },
-  { width: 800, height: 800, ratio: "1/1" },
+  { width: 800, height: 1066.6667 },
+  { width: 800, height: 1422.2223 },
+  { width: 800, height: 800 },
+  { width: 800, height: 600 },
+  { width: 800, height: 450 },
+  { width: 800, height: 800 },
 ];
 
 export function SkeletonProvider({ children }: SkeletonProviderProps) {
-  const index = useRef(0);
-  const seed = useRef(Math.floor(Math.random() * aspectRatios.length));
-
-  const getAspectRatio = useCallback(() => {
-    const i = (seed.current + index.current) % aspectRatios.length;
-    const ar = aspectRatios[i];
-    index.current = index.current + 1;
-    return ar;
+  const getAspectRatio = useCallback((seed: string) => {
+    return aspectRatios[hashSeed(seed) % aspectRatios.length];
   }, []);
 
   return (

@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -314,14 +315,6 @@ function ProgressSpinner() {
 // -----------------------------------------------------------------
 
 function MasonrySkeletonRoot(props: MasonryRootProps) {
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setLoaded(true);
-  }, []);
-
-  if (!loaded) return null;
-
   return (
     <SkeletonProvider>
       <div
@@ -379,15 +372,19 @@ function MasonrySkeletonItems(props: MasonrySkeletonItemsProps) {
   );
 }
 
+function MasonryGridSkeletonImage() {
+  const id = useId(); // stable across SSR & CSR (and StrictMode remounts)
+  const { getAspectRatio } = useSkeletonContext();
+  const [{ width, height }] = useState(() => getAspectRatio(id));
+
+  return (
+    <div className="masonry-grid-image-wrapper masonry-grid-skeleton-image-wrapper">
+      <img width={width} height={height} alt="" aria-hidden />
+    </div>
+  );
+}
+
 function MasonrySkeletonGrid(props: MasonrySkeletonGridProps) {
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setLoaded(true);
-  }, []);
-
-  if (!loaded) return null;
-
   return (
     <SkeletonProvider>
       <div
@@ -401,17 +398,6 @@ function MasonrySkeletonGrid(props: MasonrySkeletonGridProps) {
         ))}
       </div>
     </SkeletonProvider>
-  );
-}
-
-function MasonryGridSkeletonImage() {
-  const { getAspectRatio } = useSkeletonContext();
-  const [aspect] = useState(() => getAspectRatio());
-
-  return (
-    <div className="masonry-grid-image-wrapper masonry-grid-skeleton-image-wrapper">
-      <img width={aspect.width} height={aspect.height} alt="" aria-hidden />
-    </div>
   );
 }
 
