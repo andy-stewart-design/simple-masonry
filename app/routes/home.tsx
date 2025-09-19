@@ -116,8 +116,8 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
 
 function Item({ item }: { item: NonNullable<GridItems>[number] }) {
   return (
-    <a href="#" style={{ color: "unset", textDecoration: "unset" }}>
-      <div className="mg-card">
+    <div className="mg-card" style={{ position: "relative" }}>
+      <a href="#" style={{ color: "unset", textDecoration: "unset" }}>
         <MasonryGrid.Image src={item.image?.imageUrl} />
         <p className="mg-title">{item.title}</p>
         <p className="mg-price">
@@ -126,8 +126,14 @@ function Item({ item }: { item: NonNullable<GridItems>[number] }) {
             currency: "USD",
           })}
         </p>
-      </div>
-    </a>
+      </a>
+      <button
+        onClick={() => {}}
+        style={{ position: "absolute", top: 16, right: 16 }}
+      >
+        Click me
+      </button>
+    </div>
   );
 }
 

@@ -13,8 +13,11 @@ import {
 import { LoadingProvider, useLoadingContext } from "./loading-provider";
 import { SkeletonProvider, useSkeletonContext } from "./skeleton-provider";
 import "./style.css";
+import VisualFocusManager from "./focus-manager";
 
 const ROW_HEIGHT = 2;
+const FOCUSABLE =
+  '[tabindex]:not([tabindex="-1"]), button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]';
 
 // -----------------------------------------------------------------
 // TYPES
@@ -144,6 +147,7 @@ const MasonryGridItems = memo(__MasonryGridItems);
 
 function __MasonryGridItems(props: MasonryGridProps) {
   const { setLoading } = useLoadingContext();
+  const gridRef = useFocusManager();
   const groupSizes = useRef<number[]>([]);
 
   const groupedItems = useMemo(() => {
@@ -160,6 +164,7 @@ function __MasonryGridItems(props: MasonryGridProps) {
 
   return (
     <div
+      ref={gridRef}
       className="masonry-grid"
       style={{ gridAutoRows: ROW_HEIGHT }}
       data-animate-first-group={props.animateFirstGroup}
@@ -269,11 +274,24 @@ function MasonryGridLoadMore({
   className,
 }: MasonryGridLoadMoreProps) {
   const { loading, setLoading } = useLoadingContext();
+  const focusRef = useRef<number | null>(null);
 
   function handleLoadMore() {
+    focusRef.current =
+      document.querySelectorAll(".masonry-grid-item").length - 1;
     setLoading(true);
     onClick();
   }
+
+  useEffect(() => {
+    if (loading || typeof focusRef.current !== "number") return;
+    const gridEl = Array.from(document.querySelectorAll(".masonry-grid-item"))[
+      focusRef.current
+    ];
+    const focusEl = gridEl.querySelector<HTMLElement>(FOCUSABLE);
+    if (focusEl) requestAnimationFrame(() => focusEl.focus());
+    focusRef.current = null;
+  }, [loading]);
 
   return (
     <div className="masonry-grid-footer">
@@ -446,6 +464,18 @@ function resizeGridItem(item: HTMLElement) {
   const rect = item.firstElementChild?.getBoundingClientRect();
   if (!rect) return;
   item.style.gridRowEnd = "span " + Math.ceil(rect.height / ROW_HEIGHT);
+}
+
+function useFocusManager() {
+  const gridRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!gridRef.current) return;
+    const manager = new VisualFocusManager(gridRef.current);
+    return () => manager.destroy();
+  }, []);
+
+  return gridRef;
 }
 
 // -----------------------------------------------------------------
