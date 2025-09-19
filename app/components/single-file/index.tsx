@@ -10,10 +10,10 @@ import {
   type ComponentProps,
   type CSSProperties,
 } from "react";
+import GridFocusManager from "./focus-manager";
 import { LoadingProvider, useLoadingContext } from "./loading-provider";
 import { SkeletonProvider, useSkeletonContext } from "./skeleton-provider";
 import "./style.css";
-import VisualFocusManager from "./focus-manager";
 
 const ROW_HEIGHT = 2;
 const FOCUSABLE =
@@ -49,7 +49,6 @@ interface MasonryHeaderLinkProps extends BaseProps {
 interface MasonryGridProps extends ComponentProps<"div"> {
   animateFirstGroup?: boolean | AnimateFirstOption;
   reduceMotion?: boolean;
-  // focusIndicatorLabel?: string;
 }
 
 interface MasonryGridGroupProps {
@@ -222,6 +221,7 @@ function MasonryGridItem(props: MasonryGridItemProps) {
       ref={itemRef}
       className="masonry-grid-item"
       data-group-index={props.groupIndex}
+      data-grid-id={`masonry-item-${props.groupIndex}-${props.groupItemIndex}`}
       style={{ "--group-item-index": props.groupItemIndex } as CSSProperties}
     >
       <div>{props.children}</div>
@@ -274,21 +274,23 @@ function MasonryGridLoadMore({
   className,
 }: MasonryGridLoadMoreProps) {
   const { loading, setLoading } = useLoadingContext();
-  const focusRef = useRef<number | null>(null);
+  const focusRef = useRef<string | null>(null);
 
   function handleLoadMore() {
-    focusRef.current =
-      document.querySelectorAll(".masonry-grid-item").length - 1;
+    const items = Array.from(
+      document.querySelectorAll<HTMLElement>(".masonry-grid-item")
+    );
+    focusRef.current = items[items.length - 1].dataset.gridId || null;
     setLoading(true);
     onClick();
   }
 
   useEffect(() => {
-    if (loading || typeof focusRef.current !== "number") return;
-    const gridEl = Array.from(document.querySelectorAll(".masonry-grid-item"))[
-      focusRef.current
-    ];
-    const focusEl = gridEl.querySelector<HTMLElement>(FOCUSABLE);
+    if (loading || typeof focusRef.current !== "string") return;
+    const gridEl = document.querySelector<HTMLElement>(
+      `[data-grid-id="${focusRef.current}"]`
+    );
+    const focusEl = gridEl?.querySelector<HTMLElement>(FOCUSABLE);
     if (focusEl) requestAnimationFrame(() => focusEl.focus());
     focusRef.current = null;
   }, [loading]);
@@ -471,7 +473,7 @@ function useFocusManager() {
 
   useEffect(() => {
     if (!gridRef.current) return;
-    const manager = new VisualFocusManager(gridRef.current);
+    const manager = new GridFocusManager(gridRef.current);
     return () => manager.destroy();
   }, []);
 

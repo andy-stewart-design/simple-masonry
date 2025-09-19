@@ -13,7 +13,7 @@ const DEFAULTS: Required<VisualFocusManagerOptions> = {
   xTolerance: 12,
 };
 
-class VisualFocusManager {
+class GridFocusManager {
   private container: HTMLElement;
   private opts: Required<VisualFocusManagerOptions>;
   private els: HTMLElement[][] = [];
@@ -242,4 +242,4 @@ function isInteractive(el: Element) {
   return ["BUTTON", "INPUT", "SELECT", "TEXTAREA", "A"].includes(el.tagName);
 }
 
-export default VisualFocusManager;
+export default GridFocusManager;
