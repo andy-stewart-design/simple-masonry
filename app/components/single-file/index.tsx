@@ -427,36 +427,25 @@ export function groupItems<T>(items: T[], groupSizes: number[]) {
 function getAspectRatio(_width: number, _height: number) {
   const width = 800;
   const originalRatio = _width / _height;
-  let height: number;
 
   switch (true) {
     case originalRatio < 0.66:
-      height = (width / 9) * 16;
-      return { width, height };
+      return { width, height: (width / 9) * 16 };
     case originalRatio < 0.875:
-      height = (width / 3) * 4;
-      return { width, height };
+      return { width, height: (width / 3) * 4 };
     case originalRatio < 1.125:
-      height = width;
-      return { width, height };
+      return { width, height: width };
     case originalRatio < 1.66:
-      height = (width / 4) * 3;
-      return { width, height };
+      return { width, height: (width / 4) * 3 };
     default:
-      height = (width / 16) * 9;
-      return { width, height };
+      return { width, height: (width / 16) * 9 };
   }
 }
 
 function resizeGridItem(item: HTMLElement) {
-  const content = item.firstElementChild;
-  if (!content) return;
-
-  const gridRowEnd = Math.ceil(
-    content.getBoundingClientRect().height / ROW_HEIGHT
-  );
-
-  item.style.gridRowEnd = "span " + gridRowEnd;
+  const rect = item.firstElementChild?.getBoundingClientRect();
+  if (!rect) return;
+  item.style.gridRowEnd = "span " + Math.ceil(rect.height / ROW_HEIGHT);
 }
 
 // -----------------------------------------------------------------
