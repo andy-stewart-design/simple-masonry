@@ -1,0 +1,121 @@
+.masonry-grid-root {
+  --__masonry-grid-gutter: var(--masonry-grid-gutter, 16px);
+  --__masonry-grid-col-gap: var(
+    --masonry-grid-col-gap,
+    var(--__masonry-grid-gutter)
+  );
+  --__masonry-grid-row-gap: var(
+    --masonry-grid-row-gap,
+    var(--__masonry-grid-gutter)
+  );
+
+  --__masonry-grid-color-foreground: var(
+    --color-foreground-primary,
+    var(--color-neutral-800, #191919)
+  );
+  --__masonry-grid-color-accent: var(
+    --masonry-grid-color-accent,
+    var(--color-blue-500, #0968f6)
+  );
+  --__masonry-grid-color-item-focus-outline: var(
+    --masonry-grid-color-item-focus-outline,
+    var(--color-neutral-500, #8f8f8f)
+  );
+  --__masonry-grid-color-skeleton-pulse-start: var(
+    --masonry-grid-color-skeleton-pulse-start,
+    #f7f7f7
+  );
+  --__masonry-grid-color-skeleton-pulse-end: var(
+    --masonry-grid-color-skeleton-pulse-end,
+    #e5e5e5
+  );
+
+  --masonry-cols: 2;
+  --masonry-skeleton-animation: masonry-grid-bg-pulse 1000ms infinite alternate
+    ease-in-out;
+  --masonry-image-border-radius: var(--border-radius-50, 0.5rem);
+
+  @media (prefers-color-scheme: dark) {
+    --__masonry-grid-color-foreground: var(
+      --color-foreground-primary,
+      var(--color-neutral-100, #ffffff)
+    );
+    --__masonry-grid-color-accent: var(
+      --masonry-grid-color-accent,
+      var(--color-blue-400, #4d93fc)
+    );
+    --__masonry-grid-color-item-focus-outline: var(
+      --masonry-grid-color-item-focus-outline,
+      var(--color-neutral-400, #c7c7c7)
+    );
+    --__masonry-grid-color-skeleton-pulse-start: var(
+      --masonry-grid-color-skeleton-pulse-start,
+      #242424
+    );
+    --__masonry-grid-color-skeleton-pulse-end: var(
+      --masonry-grid-color-skeleton-pulse-end,
+      var(--color-neutral-800, #191919)
+    );
+  }
+
+  &[data-theme="light"] {
+    --__masonry-grid-color-foreground: var(
+      --color-foreground-primary,
+      var(--color-neutral-800, #191919)
+    );
+    --__masonry-grid-color-accent: var(
+      --masonry-grid-color-accent,
+      var(--color-blue-500, #0968f6)
+    );
+    --__masonry-grid-color-item-focus-outline: var(
+      --masonry-grid-color-item-focus-outline,
+      var(--color-neutral-500, #8f8f8f)
+    );
+    --__masonry-grid-color-skeleton-pulse-start: var(
+      --masonry-grid-color-skeleton-pulse-start,
+      #f7f7f7
+    );
+    --__masonry-grid-color-skeleton-pulse-end: var(
+      --masonry-grid-color-skeleton-pulse-end,
+      #e5e5e5
+    );
+  }
+
+  &[data-theme="dark"] {
+    --__masonry-grid-color-foreground: var(
+      --color-foreground-primary,
+      var(--color-neutral-100, #ffffff)
+    );
+    --__masonry-grid-color-accent: var(
+      --masonry-grid-color-accent,
+      var(--color-blue-400, #4d93fc)
+    );
+    --__masonry-grid-color-item-focus-outline: var(
+      --masonry-grid-color-item-focus-outline,
+      var(--color-neutral-400, #c7c7c7)
+    );
+    --__masonry-grid-color-skeleton-pulse-start: var(
+      --masonry-grid-color-skeleton-pulse-start,
+      #242424
+    );
+    --__masonry-grid-color-skeleton-pulse-end: var(
+      --masonry-grid-color-skeleton-pulse-end,
+      var(--color-neutral-800, #191919)
+    );
+  }
+
+  @media (min-width: 768px) {
+    --masonry-cols: 3;
+    --__masonry-grid-gutter: var(--masonry-grid-gutter, 1.5rem);
+    --masonry-outside-gutter: var(--spacing-400);
+    --masonry-image-border-radius: var(--border-radius-100, 1rem);
+  }
+
+  @media (min-width: 1024px) {
+    --masonry-cols: 4;
+  }
+
+  @media (min-width: 1440px) {
+    --masonry-cols: 5;
+  }
+}

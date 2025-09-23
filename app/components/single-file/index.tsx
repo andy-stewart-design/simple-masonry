@@ -10,13 +10,14 @@ import {
   type ComponentProps,
   type CSSProperties,
 } from "react";
-import GridFocusManager from "./focus-manager";
+// import GridFocusManager from "./focus-manager";
 import { LoadingProvider, useLoadingContext } from "./loading-provider";
 import { SkeletonProvider, useSkeletonContext } from "./skeleton-provider";
+import "./tokens.css";
 import "./style.css";
 
 const ROW_HEIGHT = 2;
-const FOCUSABLE =
+const FOCUSABLE_SELECTORS =
   '[tabindex]:not([tabindex="-1"]), button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]';
 
 // -----------------------------------------------------------------
@@ -290,7 +291,7 @@ function MasonryGridLoadMore({
     const gridEl = document.querySelector<HTMLElement>(
       `[data-grid-id="${focusRef.current}"]`
     );
-    const focusEl = gridEl?.querySelector<HTMLElement>(FOCUSABLE);
+    const focusEl = gridEl?.querySelector<HTMLElement>(FOCUSABLE_SELECTORS);
     if (focusEl) requestAnimationFrame(() => focusEl.focus());
     focusRef.current = null;
   }, [loading]);
