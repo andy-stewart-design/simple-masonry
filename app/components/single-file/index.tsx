@@ -146,7 +146,6 @@ const MasonryGridItems = memo(__MasonryGridItems);
 
 function __MasonryGridItems(props: MasonryGridProps) {
   const { setLoading } = useLoadingContext();
-  const gridRef = useFocusManager();
   const groupSizes = useRef<number[]>([]);
 
   const groupedItems = useMemo(() => {
@@ -163,7 +162,6 @@ function __MasonryGridItems(props: MasonryGridProps) {
 
   return (
     <div
-      ref={gridRef}
       className="masonry-grid"
       style={{ gridAutoRows: ROW_HEIGHT }}
       data-animate-first-group={props.animateFirstGroup}
@@ -224,7 +222,9 @@ function MasonryGridItem(props: MasonryGridItemProps) {
       data-grid-id={`masonry-item-${props.groupIndex}-${props.groupItemIndex}`}
       style={{ "--group-item-index": props.groupItemIndex } as CSSProperties}
     >
-      <div>{props.children}</div>
+      <div>
+        <div>{props.children}</div>
+      </div>
     </div>
   );
 }
@@ -468,17 +468,17 @@ function resizeGridItem(item: HTMLElement) {
   item.style.gridRowEnd = "span " + Math.ceil(rect.height / ROW_HEIGHT);
 }
 
-function useFocusManager() {
-  const gridRef = useRef<HTMLDivElement | null>(null);
+// function useFocusManager() {
+//   const gridRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!gridRef.current) return;
-    const manager = new GridFocusManager(gridRef.current);
-    return () => manager.destroy();
-  }, []);
+//   useEffect(() => {
+//     if (!gridRef.current) return;
+//     const manager = new GridFocusManager(gridRef.current);
+//     return () => manager.destroy();
+//   }, []);
 
-  return gridRef;
-}
+//   return gridRef;
+// }
 
 // -----------------------------------------------------------------
 // EXPORTS
